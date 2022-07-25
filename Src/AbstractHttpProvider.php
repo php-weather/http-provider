@@ -136,9 +136,10 @@ abstract class AbstractHttpProvider implements Provider
      * @param  float  $longitude
      * @param  array<mixed>  $rawData
      * @param  string|null  $type
+     * @param  string|null  $units
      * @return Weather|WeatherCollection
      */
-    abstract protected function mapRawData(float $latitude, float $longitude, array $rawData, ?string $type = null): Weather|WeatherCollection;
+    abstract protected function mapRawData(float $latitude, float $longitude, array $rawData, ?string $type = null, ?string $units = null): Weather|WeatherCollection;
 
     /**
      * @param  string  $queryString
