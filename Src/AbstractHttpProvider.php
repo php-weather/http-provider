@@ -7,6 +7,7 @@ namespace PhpWeather\HttpProvider;
 use Http\Client\HttpClient;
 use Http\Discovery\Psr17FactoryDiscovery;
 use JsonException;
+use PhpWeather\Constants\Type;
 use PhpWeather\Exception\ClientException;
 use PhpWeather\Exception\InvalidCredentials;
 use PhpWeather\Exception\NoWeatherData;
@@ -45,7 +46,8 @@ abstract class AbstractHttpProvider implements Provider
             $query->getLatitude(),
             $query->getLongitude(),
             $rawResponse,
-            Weather::CURRENT
+            Type::CURRENT,
+            $query->getUnits()
         );
         $currentWeather = null;
         if ($mappedRawdata instanceof WeatherCollection) {
@@ -70,7 +72,8 @@ abstract class AbstractHttpProvider implements Provider
             $query->getLatitude(),
             $query->getLongitude(),
             $rawResponse,
-            Weather::FORECAST
+            Type::FORECAST,
+            $query->getUnits()
         );
 
         return $this->ensureWeatherCollection($weatherData);
@@ -85,7 +88,8 @@ abstract class AbstractHttpProvider implements Provider
             $query->getLatitude(),
             $query->getLongitude(),
             $rawResponse,
-            Weather::HISTORICAL
+            Type::HISTORICAL,
+            $query->getUnits()
         );
 
         $historicalWeather = null;
@@ -115,13 +119,12 @@ abstract class AbstractHttpProvider implements Provider
             $query->getLatitude(),
             $query->getLongitude(),
             $rawResponse,
-            Weather::HISTORICAL
+            Type::HISTORICAL,
+            $query->getUnits()
         );
 
         return $this->ensureWeatherCollection($historicalData);
     }
-
-    abstract protected function mapUnits(string $units): string;
 
     abstract protected function getCurrentWeatherQueryString(WeatherQuery $query): string;
 

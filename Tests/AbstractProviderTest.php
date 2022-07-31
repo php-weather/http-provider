@@ -9,7 +9,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use PhpWeather\Common\Weather;
 use PhpWeather\Common\WeatherQuery;
-use PhpWeather\Exception\Exception;
+use PhpWeather\Exception;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
