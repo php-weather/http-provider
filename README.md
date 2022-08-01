@@ -2,7 +2,8 @@
 Abstract HTTP provider for PHP Weather
 
 ![Packagist Version](https://img.shields.io/packagist/v/php-weather/http-provider)  
-![GitHub commits since tagged version](https://img.shields.io/github/commits-since/php-weather/http-provider/0.3.0)
+![PHP Weather Common Version](https://img.shields.io/badge/phpweather--common-0.3.*-brightgreen)  
+![GitHub commits since tagged version](https://img.shields.io/github/commits-since/php-weather/http-provider/0.4.0)
 ![GitHub last commit](https://img.shields.io/github/last-commit/php-weather/http-provider)  
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/php-weather/http-provider/PHP%20Composer)
 ![GitHub](https://img.shields.io/github/license/php-weather/http-provider)
