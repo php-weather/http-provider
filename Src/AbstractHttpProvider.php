@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PhpWeather\HttpProvider;
 
-use Http\Client\HttpClient;
 use Http\Discovery\Psr17FactoryDiscovery;
 use JsonException;
 use PhpWeather\Constants\Type;
@@ -21,17 +20,18 @@ use PhpWeather\WeatherQuery;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
+use Psr\Http\Client\ClientInterface;
 
 abstract class AbstractHttpProvider implements Provider
 {
-    protected HttpClient $client;
+    protected ClientInterface $client;
     protected RequestFactoryInterface $requestFactory;
 
     /**
-     * @param  HttpClient  $client
+     * @param  ClientInterface  $client
      * @param  RequestFactoryInterface|null  $requestFactory
      */
-    public function __construct(HttpClient $client, ?RequestFactoryInterface $requestFactory = null)
+    public function __construct(ClientInterface $client, ?RequestFactoryInterface $requestFactory = null)
     {
         $this->client = $client;
         $this->requestFactory = $requestFactory ?: Psr17FactoryDiscovery::findRequestFactory();
