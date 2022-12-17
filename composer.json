@@ -13,7 +13,7 @@
     }
   ],
   "require": {
-    "php": "8.0.*|8.1.*",
+    "php": "^8",
     "php-http/client-implementation": "^1.0",
     "php-http/discovery": "^1.4",
     "php-http/httplug": "^2.2",
