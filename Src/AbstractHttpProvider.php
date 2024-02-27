@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PhpWeather\HttpProvider;
 
 use Http\Discovery\Psr17FactoryDiscovery;
-use JsonException;
 use PhpWeather\Constants\Type;
 use PhpWeather\Exception\ClientException;
 use PhpWeather\Exception\InvalidCredentials;
@@ -18,9 +17,9 @@ use PhpWeather\Weather;
 use PhpWeather\WeatherCollection;
 use PhpWeather\WeatherQuery;
 use Psr\Http\Client\ClientExceptionInterface;
+use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
-use Psr\Http\Client\ClientInterface;
 
 abstract class AbstractHttpProvider implements Provider
 {
@@ -63,86 +62,7 @@ abstract class AbstractHttpProvider implements Provider
         return $currentWeather;
     }
 
-    public function getForecast(WeatherQuery $query): WeatherCollection
-    {
-        $queryString = $this->getForecastWeatherQueryString($query);
-        $rawResponse = $this->getRawResponse($queryString);
-
-        $weatherData = $this->mapRawData(
-            $query->getLatitude(),
-            $query->getLongitude(),
-            $rawResponse,
-            Type::FORECAST,
-            $query->getUnits()
-        );
-
-        return $this->ensureWeatherCollection($weatherData);
-    }
-
-    public function getHistorical(WeatherQuery $query): Weather
-    {
-        $queryString = $this->getHistoricalWeatherQueryString($query);
-        $rawResponse = $this->getRawResponse($queryString);
-
-        $mappedRawdata = $this->mapRawData(
-            $query->getLatitude(),
-            $query->getLongitude(),
-            $rawResponse,
-            Type::HISTORICAL,
-            $query->getUnits()
-        );
-
-        $historicalWeather = null;
-        if ($mappedRawdata instanceof WeatherCollection) {
-            $dateTime = $query->getDateTime();
-            if ($dateTime !== null) {
-                $historicalWeather = $mappedRawdata->getClosest($dateTime);
-            }
-        }
-        if ($mappedRawdata instanceof Weather) {
-            $historicalWeather = $mappedRawdata;
-        }
-        if ($historicalWeather === null) {
-            throw new NoWeatherData();
-        }
-
-        return $historicalWeather;
-
-    }
-
-    public function getHistoricalTimeLine(WeatherQuery $query): WeatherCollection
-    {
-        $queryString = $this->getHistoricalTimeLineWeatherQueryString($query);
-        $rawResponse = $this->getRawResponse($queryString);
-
-        $historicalData = $this->mapRawData(
-            $query->getLatitude(),
-            $query->getLongitude(),
-            $rawResponse,
-            Type::HISTORICAL,
-            $query->getUnits()
-        );
-
-        return $this->ensureWeatherCollection($historicalData);
-    }
-
     abstract protected function getCurrentWeatherQueryString(WeatherQuery $query): string;
-
-    abstract protected function getForecastWeatherQueryString(WeatherQuery $query): string;
-
-    abstract protected function getHistoricalWeatherQueryString(WeatherQuery $query): string;
-
-    abstract protected function getHistoricalTimeLineWeatherQueryString(WeatherQuery $query): string;
-
-    /**
-     * @param  float  $latitude
-     * @param  float  $longitude
-     * @param  array<mixed>  $rawData
-     * @param  string|null  $type
-     * @param  string|null  $units
-     * @return Weather|WeatherCollection
-     */
-    abstract protected function mapRawData(float $latitude, float $longitude, array $rawData, ?string $type = null, ?string $units = null): Weather|WeatherCollection;
 
     /**
      * @param  string  $queryString
@@ -159,7 +79,7 @@ abstract class AbstractHttpProvider implements Provider
         $response = $this->getParsedResponse($request);
         try {
             return json_decode($response, true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException $e) {
+        } catch (\JsonException $e) {
             throw new WeatherException($e->getMessage(), $e->getCode(), $e);
         }
 
@@ -208,6 +128,34 @@ abstract class AbstractHttpProvider implements Provider
     }
 
     /**
+     * @param  float  $latitude
+     * @param  float  $longitude
+     * @param  array<mixed>  $rawData
+     * @param  string|null  $type
+     * @param  string|null  $units
+     * @return Weather|WeatherCollection
+     */
+    abstract protected function mapRawData(float $latitude, float $longitude, array $rawData, ?string $type = null, ?string $units = null): Weather|WeatherCollection;
+
+    public function getForecast(WeatherQuery $query): WeatherCollection
+    {
+        $queryString = $this->getForecastWeatherQueryString($query);
+        $rawResponse = $this->getRawResponse($queryString);
+
+        $weatherData = $this->mapRawData(
+            $query->getLatitude(),
+            $query->getLongitude(),
+            $rawResponse,
+            Type::FORECAST,
+            $query->getUnits()
+        );
+
+        return $this->ensureWeatherCollection($weatherData);
+    }
+
+    abstract protected function getForecastWeatherQueryString(WeatherQuery $query): string;
+
+    /**
      * @param  WeatherCollection|Weather  $weatherData
      * @return WeatherCollection
      */
@@ -222,5 +170,56 @@ abstract class AbstractHttpProvider implements Provider
 
         return $weatherData;
     }
+
+    public function getHistorical(WeatherQuery $query): Weather
+    {
+        $queryString = $this->getHistoricalWeatherQueryString($query);
+        $rawResponse = $this->getRawResponse($queryString);
+
+        $mappedRawdata = $this->mapRawData(
+            $query->getLatitude(),
+            $query->getLongitude(),
+            $rawResponse,
+            Type::HISTORICAL,
+            $query->getUnits()
+        );
+
+        $historicalWeather = null;
+        if ($mappedRawdata instanceof WeatherCollection) {
+            $dateTime = $query->getDateTime();
+            if ($dateTime !== null) {
+                $historicalWeather = $mappedRawdata->getClosest($dateTime);
+            }
+        }
+        if ($mappedRawdata instanceof Weather) {
+            $historicalWeather = $mappedRawdata;
+        }
+        if ($historicalWeather === null) {
+            throw new NoWeatherData();
+        }
+
+        return $historicalWeather;
+
+    }
+
+    abstract protected function getHistoricalWeatherQueryString(WeatherQuery $query): string;
+
+    public function getHistoricalTimeLine(WeatherQuery $query): WeatherCollection
+    {
+        $queryString = $this->getHistoricalTimeLineWeatherQueryString($query);
+        $rawResponse = $this->getRawResponse($queryString);
+
+        $historicalData = $this->mapRawData(
+            $query->getLatitude(),
+            $query->getLongitude(),
+            $rawResponse,
+            Type::HISTORICAL,
+            $query->getUnits()
+        );
+
+        return $this->ensureWeatherCollection($historicalData);
+    }
+
+    abstract protected function getHistoricalTimeLineWeatherQueryString(WeatherQuery $query): string;
 
 }
